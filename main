@@ -1,0 +1,34 @@
+import requests
+from datetime import datetime, timedelta
+from twilio.rest import Client
+
+# MLH API URL
+mlh_api_url = "https://mlh-events.now.sh/api/v2/events"
+
+# Twilio credentials
+account_sid = 
+auth_token = 
+twilio_phone_number = 
+your_phone_number = 
+
+# Get current date and date one week from now
+current_date = datetime.now().isoformat()
+one_week_later = (datetime.now() + timedelta(days=7)).isoformat()
+
+# Make API request to retrieve upcoming hackathons
+params = {
+    "start_date.gt": current_date,
+    "start_date.lt": one_week_later
+}
+response = requests.get(mlh_api_url, params=params)
+hackathons = response.json()["data"]
+
+# Iterate through hackathons and send text messages
+client = Client(account_sid, auth_token)
+for hackathon in hackathons:
+    message = client.messages.create(
+        to=your_phone_number,
+        from_=twilio_phone_number,
+        body=f"Upcoming Hackathon: {hackathon['name']} on {hackathon['start_date']}. Register at {hackathon['url']}"
+    )
+    print(f"Message sent for: {hackathon['name']}")
